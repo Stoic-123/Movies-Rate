@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <link
+      rel="apple-touch-icon"
+      type="image/png"
+      href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png"
+    />
+
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico"
+    />
+
+    <link
+      rel="mask-icon"
+      type="image/x-icon"
+      href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg"
+      color="#111"
+    />
+
+    <style>
+      body,
+      html {
+        height: 100%;
+        display: grid;
+        padding: 0;
+        margin: 0;
+        background-color: pink;
+      }
+
+      #container {
+        margin: auto;
+      }
+
+      button {
+        padding: 3rem 4rem;
+        background: transparent;
+        font-family: "Roboto";
+        color: #fcddfc;
+        text-shadow: 2px 3px 4px rgba(5, 0, 0, 1);
+        font-size: 3rem;
+        background: rgba(255, 255, 255, 0.41);
+        border-radius: 16px;
+        box-shadow: inset 1px 1px 31px 20px rgba(252, 221, 252, 1);
+        backdrop-filter: blur(6.4px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+      }
+    </style>
+    <style>
+      @font-face {
+        font-family: "Mona Sans";
+        src: url("https://assets.codepen.io/64/Mona-Sans.woff2")
+            format("woff2 supports variations"),
+          url("https://assets.codepen.io/64/Mona-Sans.woff2")
+            format("woff2-variations");
+        font-weight: 100 1000;
+      }
+      /* 
+      -- Why the @layer ?
+         I misuse the @layer for a good reason. 
+         Since I do a lot of demo featuring #houdini
+         I like to store my @property --foo {} within
+         A @layer so that the viewer can simply fold the layer 
+         And access to the interesting part of the CSS panel.
+      */
+      @layer properties {
+        @property --after-bg-position {
+          syntax: "<number>";
+          inherits: true;
+          initial-value: 0;
+        }
+        @property --after-radial-bg-position {
+          syntax: "<number>";
+          inherits: true;
+          initial-value: 0;
+        }
+        @property --after-bg-width {
+          syntax: "<number>";
+          inherits: true;
+          initial-value: 100;
+        }
+        @property --after-bg-opacity {
+          syntax: "<number>";
+          inherits: true;
+          initial-value: 20;
+        }
+        @property --after-shadow-offset {
+          syntax: "<number>";
+          inherits: true;
+          initial-value: 15;
+        }
+        @property --after-scale {
+          syntax: "<number>";
+          inherits: true;
+          initial-value: 0.85;
+        }
+        @property --li-before-opacity {
+          syntax: "<number>";
+          inherits: true;
+          initial-value: 0;
+        }
+      }
+      :root {
+        /* -- Colors: */
+        --body-bg-color: hsl(221deg 16% 6%);
+        /* -- Background */
+        --bg-position: 0;
+        /* -- misc */
+        --debug: 0;
+        --trs-easing: cubic-bezier(0.41, -0.09, 0.55, 1.09);
+        --trs-timing: 300ms;
+        --trs-delay: 80ms;
+      }
+
+      *,
+      *:before,
+      *:after {
+        box-sizing: border-box;
+        /* debug */
+        outline: calc(var(--debug) * 1px) dashed rgba(255, 0, 0, 0.5);
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        padding: 0;
+        margin: 0;
+      }
+
+      body {
+        background: var(--body-bg-color);
+        display: grid;
+        place-items: center;
+        font-family: "Mona Sans", sans-serif;
+      }
+
+      main {
+        width: 100%;
+        max-width: 700px;
+        color: white;
+      }
+      main header {
+        text-align: center;
+        margin-bottom: 6em;
+      }
+      main header h2 {
+        font-size: 2em;
+        font-weight: 500;
+      }
+
+      .nav {
+        transition: --after-bg-position var(--trs-timing) var(--trs-easing) 0.2s,
+          --after-radial-bg-position var(--trs-timing) var(--trs-easing) 0.2s,
+          --after-bg-width var(--trs-timing) var(--trs-easing) 0.2s,
+          --after-bg-opacity var(--trs-timing) var(--trs-easing) 0.2s,
+          --li-before-opacity var(--trs-timing) var(--trs-easing) 0.2s;
+        background: var(--body-bg-color);
+        border-radius: 100px;
+        position: relative;
+      }
+      .nav:before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: calc(calc(var(--after-bg-width) * 1px) - 8px);
+        height: 100%;
+        background: rgb(255 255 255 / calc(var(--after-shadow-offset) * 1%));
+        border-radius: 100px;
+        filter: blur(20px);
+        left: 0;
+        top: 0;
+        transform: translateX(calc(var(--after-bg-position) * 1px)) scale(1.1);
+      }
+      .nav ul {
+        position: relative;
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        height: 80px;
+        border-radius: 100px;
+        background-position: center center;
+        background-image: radial-gradient(
+          ellipse 150px 100px at calc(var(--after-radial-bg-position) * 1px)
+            bottom,
+          white 0%,
+          rgba(255, 255, 255, 0.2) 100%
+        );
+        /*
+         &:has(li.active:hover):after {
+          --after-bg-opacity: 50;
+          --after-shadow-offset: 10;
+        }
+        */
+        /* 
+          Some :has() goodness to control the 
+          nav:after border-radius hihihi 
+        */
+      }
+      .nav ul:active {
+        --after-scale: 0.75;
+      }
+      .nav ul:before {
+        content: "";
+        display: block;
+        position: absolute;
+        width: calc(100% - 2px);
+        height: calc(100% - 2px);
+        background: var(--body-bg-color);
+        top: 1px;
+        left: 1px;
+        border-radius: 100px;
+      }
+      .nav ul:after {
+        content: "";
+        display: block;
+        position: absolute;
+        z-index: 1;
+        width: calc(calc(var(--after-bg-width) * 1px) - 12px);
+        height: calc(100% - 12px);
+        background: linear-gradient(
+          to bottom,
+          rgb(255 255 255 / calc(calc(var(--after-bg-opacity, 0) / 10) * 1%)),
+          rgba(255, 255, 255, 0.1)
+        );
+        box-shadow: inset 0 -6px calc(var(--after-shadow-offset, 0) * 1px) rgb(255
+              255 255 / calc(var(--after-bg-opacity) * 1%));
+        left: 6px;
+        top: 6px;
+        transform: translate(calc(var(--after-bg-position) * 1px), 0);
+        border-radius: 100px 12px 12px 100px;
+        transition: --after-bg-opacity var(--trs-timing) var(--trs-easing)
+            var(--trs-delay),
+          --after-shadow-offset var(--trs-timing) var(--trs-easing)
+            var(--trs-delay),
+          border-radius var(--trs-timing) var(--trs-easing) var(--trs-delay);
+        pointer-events: none;
+      }
+      .nav ul li {
+        padding: 1em;
+        height: 100%;
+        width: 100%;
+        position: relative;
+        transform-style: preserve-3d;
+        perspective: 800px;
+      }
+      .nav ul li:not(.active):hover {
+        --li-before-opacity: 0.3;
+      }
+      .nav ul li:before {
+        content: "";
+        display: block;
+        position: absolute;
+        z-index: 1;
+        background: rgba(255, 0, 0, 0.1);
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        border-radius: 8px;
+        pointer-events: none;
+        user-select: none;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.05),
+          rgba(255, 255, 255, 0.35)
+        );
+        opacity: var(--li-before-opacity);
+        transform: scale(var(--after-scale))
+          rotateY(calc(var(--tilt-bg-y) * 3 * -1deg))
+          rotateX(calc(var(--tilt-bg-x) * 3 * 1deg)) translateZ(15px);
+        transition: --li-before-opacity var(--trs-timing) var(--trs-easing),
+          --after-scale calc(var(--trs-timing) / 2) var(--trs-easing)
+            calc(var(--trs-delay) / 2);
+      }
+      .nav ul li:first-of-type:before {
+        border-radius: 100px 12px 12px 100px;
+      }
+      .nav ul li:last-of-type:before {
+        border-radius: 12px 100px 100px 12px;
+      }
+      .nav ul li a {
+        display: block;
+        color: inherit;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        position: relative;
+        z-index: 10;
+      }
+      .nav ul:has(li.active:first-of-type a):after {
+        border-radius: 100px 12px 12px 100px;
+      }
+      .nav ul:has(li.active:last-of-type a):after {
+        border-radius: 12px 100px 100px 12px;
+      }
+      .nav ul:has(li.active:nth-child(n + 2):nth-child(-n + 3) a):after {
+        border-radius: 100px;
+      }
+    </style>
+
+    <script>
+      window.console = window.console || function (t) {};
+    </script>
+
+    <script>
+      if (document.location.search.match(/type=embed/gi)) {
+        window.parent.postMessage("resize", "*");
+      }
+    </script>
+    <script>
+      if (document.location.search.match(/type=embed/gi)) {
+        window.parent.postMessage("resize", "*");
+      }
+    </script>
+    <meta charset="UTF-8" />
+    <title>Movies Rate</title>
+
+    <link
+      rel="apple-touch-icon"
+      type="image/png"
+      href="https://cpwebassets.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png"
+    />
+    <link rel="stylesheet" href="style.css" />
+
+    <meta name="apple-mobile-web-app-title" content="CodePen" />
+
+    <link
+      rel="shortcut icon"
+      type="image/x-icon"
+      href="https://cpwebassets.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico"
+    />
+
+    <link
+      rel="mask-icon"
+      type="image/x-icon"
+      href="https://cpwebassets.codepen.io/assets/favicon/logo-pin-b4b4269c16397ad2f0f7a01bcdf513a1994f4c94b8af2f191c09eb0d601762b1.svg"
+      color="#111"
+    />
+
+    <style>
+      * {
+        -webkit-box-sizing: inherit;
+        box-sizing: inherit;
+      }
+
+      html {
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+      }
+
+      body {
+        color: #e9edee;
+        font-family: sans-serif;
+        font-style: 1rem;
+        line-height: 1.5;
+        margin: 0 auto;
+        min-height: 100vh;
+        width: 90%;
+      }
+
+      figure {
+        margin: 0;
+      }
+
+      img {
+        height: auto;
+        max-width: 100%;
+        vertical-align: middle;
+      }
+
+      input {
+        border: 2px;
+        font: inherit;
+        margin: 30px;
+        padding: 0;
+        margin-left: -30px;
+        padding: 30px;
+        border-radius: 8px;
+        border-style: solid;
+        height: 90px;
+        width: 60px;
+        margin-left: -15px;
+      }
+
+      .search {
+        font-size: 1.5rem;
+        margin: 1.5em auto 3em;
+        max-width: 80%;
+      }
+
+      .search [type="search"] {
+        background-color: #131b20;
+        color: #f2fff7;
+        padding: 0.5em 2em;
+        text-align: center;
+        width: 100%;
+      }
+
+      .movies {
+        display: grid;
+        grid-gap: 3em 2em;
+        grid-template-columns: repeat(auto-fill, minmax(12em, 1fr));
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+
+      .movie__figure {
+        position: relative;
+      }
+
+      .movie__poster {
+        -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 1em rgba(0, 0, 0, 0.5);
+        margin-bottom: 0.5em;
+        padding: 20px;
+        margin: 30px;
+        height: 600px;
+        width: 340px;
+      }
+
+      .movie__vote {
+        -webkit-box-align: center;
+        -ms-flex-align: center;
+        align-items: center;
+        background-color: #f68d01;
+        border-radius: 50%;
+        -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, 0.25);
+        box-shadow: 0 0 1em rgba(0, 0, 0, 0.25);
+        display: -webkit-box;
+        display: -ms-flexbox;
+        display: flex;
+        height: 2.3em;
+        -webkit-box-pack: center;
+        -ms-flex-pack: center;
+        justify-content: center;
+        padding: 0.6em;
+        position: absolute;
+        right: 0;
+        text-align: center;
+        top: 75%;
+        -webkit-transform: translateX(50%);
+        -ms-transform: translateX(50%);
+        transform: translateX(50%);
+        width: 2.25em;
+      }
+
+      .movie__title {
+        font-size: 20px;
+        font-weight: 400;
+        margin: 0;
+        text-align: center;
+        color: rgb(34, 30, 28);
+        background-color: rgba(206, 192, 174, 0.438);
+        padding: 13px;
+        border: 3px;
+        padding: 8px;
+      }
+    </style>
+
+    <script>
+      window.console = window.console || function (t) {};
+    </script>
+
+    <script>
+      if (document.location.search.match(/type=embed/gi)) {
+        window.parent.postMessage("resize", "*");
+      }
+    </script>
+  </head>
+
+  <body
+    translate="no"
+    style="
+      background: linear-gradient(88deg, rgb(163, 226, 128), rgb(90, 35, 102));
+    "
+  >
+    <header>
+      <h1 class="mo1">Wellcome to Movies Rating</h1>
+    </header>
+    <div id="container">
+      <button type="button" id="generate">Generate Colors</button>
+    </div>
+    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-2c7831bb44f98c1391d6a4ffda0e1fd302503391ca806e7fcc7b9b87197aec26.js"></script>
+
+    <script id="rendered-js">
+      let button = document.getElementById("generate");
+      let hexString = "0123456789abcdef";
+      let body = document.body;
+
+      let randomColor = () => {
+        let hexCode = "#";
+        for (i = 0; i < 6; i++) {
+          if (window.CP.shouldStopExecution(0)) break;
+          hexCode += hexString[Math.floor(Math.random() * hexString.length)];
+        }
+        window.CP.exitedLoop(0);
+        return hexCode;
+      };
+
+      let generateGradient = () => {
+        let colorOne = randomColor();
+        let colorTwo = randomColor();
+        let angle = Math.floor(Math.random() * 360);
+        body.style.background = `linear-gradient(${angle}deg, ${colorOne}, ${colorTwo})`;
+        body.value = `background: linear-gradient(${angle}deg, ${colorOne}, ${colorTwo});`;
+      };
+
+      button.addEventListener("click", generateGradient);
+      //# sourceURL=pen.js
+    </script>
+
+    <main>
+      <nav
+        class="nav"
+        style="
+          --after-bg-position: 0;
+          --after-radial-bg-position: 0;
+          --after-bg-width: 128.75;
+          --tilt-bg-y: 2.15;
+          --tilt-bg-x: -0.310156;
+        "
+      >
+        <ul>
+          <li class="active"><a href="#home" id="home">Home</a></li>
+          <li class><a href="#project" id="project">Project</a></li>
+          <li class><a href="#about" id="about">About</a></li>
+          <li class><a href="#how" id="how">How we work</a></li>
+        </ul>
+      </nav>
+    </main>
+    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-2c7831bb44f98c1391d6a4ffda0e1fd302503391ca806e7fcc7b9b87197aec26.js"></script>
+    <script id="rendered-js">
+      function inverseMousePosition(element, event) {
+        const rect = element.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+
+        const res = {
+          x1: -(x - rect.width / 2) / 20, // top left
+          y1: -(y - rect.height / 2) / 20,
+          x2: -(x - rect.width / 2) / 20, // top right
+          y2: (y - rect.height / 2) / 20,
+          x3: (x - rect.width / 2) / 20, // bottom left
+          y3: -(y - rect.height / 2) / 20,
+          x4: (x - rect.width / 2) / 20, // bottom right
+          y4: (y - rect.height / 2) / 20,
+        };
+
+        const resKey =
+          "x" + (x < rect.width / 2 ? 1 : 2) + (y < rect.height / 2 ? 1 : 3);
+        const tilt = res;
+        return tilt !== undefined ? tilt : 0; // default to 0 if undefined
+      }
+
+      function handleClick(event) {
+        const nav = document.querySelector(".nav");
+        const target = event.target.parentNode;
+        const width = target.offsetWidth;
+        const { left } = target.getBoundingClientRect();
+        const offsetLeft = left - nav.getBoundingClientRect().left;
+
+        [...nav.querySelectorAll("li")].map((link) =>
+          link.classList.remove("active")
+        );
+        event.target.parentNode.classList.add("active");
+
+        nav.style.setProperty("--after-bg-position", offsetLeft);
+        nav.style.setProperty(
+          "--after-radial-bg-position",
+          left + width / 2 - nav.getBoundingClientRect().left
+        );
+        nav.style.setProperty("--after-bg-width", width);
+      }
+
+      const nav = document.querySelector(".nav");
+
+      const links = nav.querySelectorAll("li a");
+      for (let i = 0; i < links.length; i++) {
+        if (window.CP.shouldStopExecution(0)) break;
+        links[i].addEventListener("click", handleClick);
+        links[i].addEventListener("mousemove", (event) => {
+          const tilt = inverseMousePosition(event.target, event);
+
+          nav.style.setProperty("--tilt-bg-y", tilt.x1 * 2); // tone down the movement a bit
+          nav.style.setProperty("--tilt-bg-x", tilt.y1 * 2); // tone down the movement a bit
+        });
+      }
+      window.CP.exitedLoop(0);
+
+      ["DOMContentLoaded", "resize"].map((event) =>
+        window.addEventListener(event, () => {
+          const { width, left } = links[0].parentNode.getBoundingClientRect();
+          for (let i = 0; i < links.length; i++) {
+            if (window.CP.shouldStopExecution(1)) break;
+            links[i].parentNode.classList.remove("active");
+          }
+          window.CP.exitedLoop(1);
+
+          links[0].parentNode.classList.add("active");
+
+          const offsetLeft = left - nav.getBoundingClientRect().left;
+
+          nav.style.setProperty("--after-bg-position", offsetLeft);
+          nav.style.setProperty("--after-radial-bg-position", 0);
+          nav.style.setProperty("--after-bg-width", width);
+        })
+      );
+      //# sourceURL=pen.js
+    </script>
+
+    <div id="root">
+      <div class="app">
+        <form class="search">
+          <input
+            type="search"
+            placeholder="Search for Movie Title …"
+            value=""
+          />
+        </form>
+        <ul class="movies">
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/kuf6dutpsT0vSVehic3EZIqkOBt.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">8.4</span></figcaption>
+                <h2 class="movie__title">Puss in Boots: The Last Wish</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/x3PIk93PTbxT88ohfeb26L1VpZw.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.2</span></figcaption>
+                <h2 class="movie__title">
+                  Prizefighter: The Life of Jem Belcher
+                </h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/sv1xJUazXeYqALzczSZ3O6nkH75.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.3</span></figcaption>
+                <h2 class="movie__title">Black Panther: Wakanda Forever</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/aCy61aU7BMG7SfhkaAaasS0KzUO.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">6.6</span></figcaption>
+                <h2 class="movie__title">Sayen</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/dm06L9pxDOL9jNSK4Cb6y139rrG.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">6.4</span></figcaption>
+                <h2 class="movie__title">Knock at the Cabin</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/jQ0gylJMxWSL490sy0RrPj1Lj7e.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">8.1</span></figcaption>
+                <h2 class="movie__title">The Whale</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/v5CfpzxoJDkZxjZAizClFdlEF0U.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">5.3</span></figcaption>
+                <h2 class="movie__title">Shark Side of the Moon</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/1EnBjTJ5utgT1OXYBZ8YwByRCzP.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">6.2</span></figcaption>
+                <h2 class="movie__title">Die Hart</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/qi9r5xBgcc9KTxlOLjssEbDgO0J.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">6.9</span></figcaption>
+                <h2 class="movie__title">Plane</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/2yzpiUeOQHnbiOayAAwG0FcXRmc.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">5.8</span></figcaption>
+                <h2 class="movie__title">13 Exorcisms</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/vJU3rXSP9hwUuLeq8IpfsJShLOk.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.1</span></figcaption>
+                <h2 class="movie__title">Creed III</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/zpCCTtuQMHiHycpsrWnW2eCrBql.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.5</span></figcaption>
+                <h2 class="movie__title">Shazam! Fury of the Gods</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.9</span></figcaption>
+                <h2 class="movie__title">Everything Everywhere All at Once</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/t6HIqrRAclMCA60NsSmeqe9RmNV.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.7</span></figcaption>
+                <h2 class="movie__title">Avatar: The Way of Water</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/d9nBoowhjiiYc4FBNtQkPY7c11H.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.4</span></figcaption>
+                <h2 class="movie__title">M3GAN</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/cmWTZj9zzT9KFt3XyL0gssL7Ig8.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">6</span></figcaption>
+                <h2 class="movie__title">Little Dixie</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/ngl2FKBlU4fhbdsrtdom9LVLBXw.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">6.4</span></figcaption>
+                <h2 class="movie__title">Ant-Man and the Wasp: Quantumania</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/mbigXpUgVgLOacgxlyFfsLRFqxQ.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">5.3</span></figcaption>
+                <h2 class="movie__title">Lord of the Streets</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/aePBN8ffLCHoUXp8lkA5P29CXdx.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">7.4</span></figcaption>
+                <h2 class="movie__title">Scream VI</h2>
+              </figure>
+            </div>
+          </li>
+          <li>
+            <div class="movie">
+              <figure class="movie__figure">
+                <img
+                  src="https://image.tmdb.org/t/p/w300_and_h450_bestv2/A1yymig7S0FTWv9cTtOwdI1cH5V.jpg"
+                  class="movie__poster"
+                />
+                <figcaption><span class="movie__vote">6.1</span></figcaption>
+                <h2 class="movie__title">
+                  The Forbidden Legend: Sex &amp; Chopsticks 2
+                </h2>
+              </figure>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <script src="https://cpwebassets.codepen.io/assets/common/stopExecutionOnTimeout-2c7831bb44f98c1391d6a4ffda0e1fd302503391ca806e7fcc7b9b87197aec26.js"></script>
+
+    <script id="rendered-js" type="module">
+      function _extends() {
+        _extends =
+          Object.assign ||
+          function (target) {
+            for (var i = 1; i < arguments.length; i++) {
+              if (window.CP.shouldStopExecution(0)) break;
+              var source = arguments[i];
+              for (var key in source) {
+                if (Object.prototype.hasOwnProperty.call(source, key)) {
+                  target[key] = source[key];
+                }
+              }
+            }
+            window.CP.exitedLoop(0);
+            return target;
+          };
+        return _extends.apply(this, arguments);
+      }
+      import React, { useState } from "https://cdn.skypack.dev/react@17";
+      import { render } from "https://cdn.skypack.dev/react-dom@17";
+      import {
+        useQuery,
+        QueryClient,
+        QueryClientProvider,
+      } from "https://cdn.skypack.dev/react-query@3";
+
+      const queryClient = new QueryClient();
+
+      const Movie = (props) => {
+        const { poster_path, title, vote_average } = props;
+
+        return /*#__PURE__*/ React.createElement(
+          "div",
+          { className: "movie" } /*#__PURE__*/,
+          React.createElement(
+            "figure",
+            { className: "movie__figure" } /*#__PURE__*/,
+            React.createElement("img", {
+              src: `https://image.tmdb.org/t/p/w300_and_h450_bestv2${poster_path}`,
+              className: "movie__poster",
+            }) /*#__PURE__*/,
+
+            React.createElement(
+              "figcaption",
+              null /*#__PURE__*/,
+              React.createElement(
+                "span",
+                { className: "movie__vote" },
+                vote_average
+              )
+            ) /*#__PURE__*/,
+
+            React.createElement("h2", { className: "movie__title" }, title)
+          )
+        );
+      };
+
+      const Movies = (props) => {
+        const { movies } = props;
+
+        return /*#__PURE__*/ React.createElement(
+          "ul",
+          { className: "movies" },
+          movies.map((movie /*#__PURE__*/) =>
+            React.createElement(
+              "li",
+              { key: movie.id } /*#__PURE__*/,
+              React.createElement(Movie, movie)
+            )
+          )
+        );
+      };
+
+      const Search = (props) => {
+        const { onInput, query, ...otherProps } = props;
+
+        return /*#__PURE__*/ React.createElement(
+          "form",
+          { className: "search", onInput: onInput } /*#__PURE__*/,
+          React.createElement(
+            "input",
+            _extends({ type: "search", value: query }, otherProps)
+          )
+        );
+      };
+
+      const API_BASE = "https://api.themoviedb.org/3";
+      const API_KEY =
+        "eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI1M2ZmNjljNmRiM2YxMjgxZTk2ZTRlODQ5ZWRhNmQ2NSIsInN1YiI6IjU2YzRhZmU1YzNhMzY4MGQzZTAwMDIyMSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.-TqKfzJ2O4yVBYI0aiaUDgkg_WDRhOoRfnC5U-QE2SU";
+
+      async function fetcher(url) {
+        const response = await fetch(`${API_BASE}${url}`, {
+          headers: {
+            Authorization: `Bearer ${API_KEY}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+
+        return response.json();
+      }
+
+      function App() {
+        const [query, setQuery] = useState("");
+
+        const url = query ? `/search/movie?query=${query}` : "/movie/popular";
+        const { isLoading, isError, data, error } = useQuery([url], () =>
+          fetcher(url)
+        );
+
+        if (isError) {
+          return /*#__PURE__*/ React.createElement(
+            "div",
+            null,
+            "Error: ",
+            error
+          );
+        }
+
+        function onInput(event) {
+          const { value } = event.target;
+
+          setQuery(value);
+        }
+
+        return /*#__PURE__*/ React.createElement(
+          "div",
+          { className: "app" } /*#__PURE__*/,
+          React.createElement(Search, {
+            query: query,
+            onInput: onInput,
+            placeholder: "Search for Movie Title \u2026",
+          }),
+
+          isLoading
+            ? /*#__PURE__*/ React.createElement("div", null, "Loading \u2026")
+            : /*#__PURE__*/ React.createElement(Movies, {
+                movies: data.results,
+              })
+        );
+      }
+
+      function Root() {
+        return /*#__PURE__*/ React.createElement(
+          QueryClientProvider,
+          { client: queryClient } /*#__PURE__*/,
+          React.createElement(App, null)
+        );
+      }
+
+      render(
+        /*#__PURE__*/ React.createElement(Root, null),
+        document.getElementById("root")
+      );
+      //# sourceURL=pen.js
+    </script>
+    <!-- Code injected by live-server -->
+    <script>
+      // <![CDATA[  <-- For SVG support
+      if ("WebSocket" in window) {
+        (function () {
+          function refreshCSS() {
+            var sheets = [].slice.call(document.getElementsByTagName("link"));
+            var head = document.getElementsByTagName("head")[0];
+            for (var i = 0; i < sheets.length; ++i) {
+              var elem = sheets[i];
+              var parent = elem.parentElement || head;
+              parent.removeChild(elem);
+              var rel = elem.rel;
+              if (
+                (elem.href && typeof rel != "string") ||
+                rel.length == 0 ||
+                rel.toLowerCase() == "stylesheet"
+              ) {
+                var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, "");
+                elem.href =
+                  url +
+                  (url.indexOf("?") >= 0 ? "&" : "?") +
+                  "_cacheOverride=" +
+                  new Date().valueOf();
+              }
+              parent.appendChild(elem);
+            }
+          }
+          var protocol =
+            window.location.protocol === "http:" ? "ws://" : "wss://";
+          var address =
+            protocol + window.location.host + window.location.pathname + "/ws";
+          var socket = new WebSocket(address);
+          socket.onmessage = function (msg) {
+            if (msg.data == "reload") window.location.reload();
+            else if (msg.data == "refreshcss") refreshCSS();
+          };
+          if (
+            sessionStorage &&
+            !sessionStorage.getItem("IsThisFirstTime_Log_From_LiveServer")
+          ) {
+            console.log("Live reload enabled.");
+            sessionStorage.setItem("IsThisFirstTime_Log_From_LiveServer", true);
+          }
+        })();
+      } else {
+        console.error(
+          "Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading."
+        );
+      }
+      // ]]>
+    </script>
+    <footer class="i99">
+      <h1><\>LONG ឡុង</h1>
+    </footer>
+  </body>
+</html>
