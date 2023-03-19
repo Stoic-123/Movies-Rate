@@ -135,6 +135,7 @@ main header h2 {
 }
 body {
   height: max-content;
+  width: max-content;
 }
 
 .nav ul li {
@@ -203,7 +204,6 @@ body {
 }
 @media screen and (max-width: 600px) {
   .movie__poster {
-    display: flex;
   }
 
   .movie__poster {
