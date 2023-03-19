@@ -212,9 +212,14 @@ body {
   input {
     margin-right: 8px;
   }
+  #long98 {
+    font-size: 60px;
+  }
 }
 #generate {
   padding: 15px;
 }
-header {
+
+#long98 {
+  font-style: 30px;
 }
