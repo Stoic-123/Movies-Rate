@@ -309,17 +309,21 @@ input {
 }
 
 .movie__poster {
-  -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, 0.5);
-  box-shadow: 0 0 1em rgba(0, 0, 0, 0.5);
-  margin-bottom: 0.5em;
-  display: grid;
-
-  height: 460px;
-  width: 400px;
-  align-items: baseline;
+    -webkit-box-shadow: 0 0 1em rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 1em rgba(0, 0, 0, 0.5);
+    margin-bottom: 0.5em;
+    /* display: grid; */
+    height: 360px;
+    width: 7051px;
+    align-items: baseline;
+    justify-content: space-between;
+    display: flex;
 }
 .app {
-  display: grid;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 10px;
 }
 .movie__vote {
   -webkit-box-align: center;
